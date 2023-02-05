@@ -64,7 +64,7 @@ void draw(){
     mod_pos.Y = apple_pos[1];
     mod_pos.X *= 2;
     SetConsoleCursorPosition(out, mod_pos);
-    printf("\033[0;31mA");
+    printf("\033[1;31mA");
 
     int i;
     for (i = 0; i < length; i++){
@@ -72,7 +72,7 @@ void draw(){
         mod_pos.Y = snake_pos[i][1];
         mod_pos.X *= 2;
         SetConsoleCursorPosition(out, mod_pos);
-        printf("\033[0;32mS");
+        printf("\033[1;32mS");
     }
 
     printf("\033[0m");
@@ -217,7 +217,7 @@ void init_board(){
     for (row = 0; row < SIZE_Y; row++){
         for (col = 0; col < SIZE_X; col++){
             if (board[row][col] == 'S')
-                printf("\033[0;32m%c \033[0m", board[row][col]);
+                printf("\033[1;32m%c \033[0m", board[row][col]);
             else
                 printf("%c ", board[row][col]);
         }
