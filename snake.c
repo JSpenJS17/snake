@@ -90,8 +90,9 @@ int on_apple(){
 int on_snake(){
     int i;
     for (i = 0; i < length; i++){
-        if (apple_pos[0] == snake_pos[i][0] && apple_pos[1] == snake_pos[i][1])
+        if (apple_pos[0] == snake_pos[i][0] && apple_pos[1] == snake_pos[i][1]){
             return 1;
+        }
     }
     return 0;
 }
@@ -112,16 +113,15 @@ void add_pos(){
             snake_pos[i][0] = snake_pos[i+1][0];
             snake_pos[i][1] = snake_pos[i+1][1];
         }
+        snake_pos[length-1][0] = pos.X;
+        snake_pos[length-1][1] = pos.Y;
+    
     } else {
         length++;
+        snake_pos[length-1][0] = pos.X;
+        snake_pos[length-1][1] = pos.Y;
         spawn_apple();
     }
-    snake_pos[length-1][0] = pos.X;
-    snake_pos[length-1][1] = pos.Y;
-}
-
-void eat(){
-
 }
 
 int move(){
@@ -189,10 +189,6 @@ int move(){
         if (pos.X == snake_pos[i][0] && pos.Y == snake_pos[i][1]){
             return FAIL;
         }
-    }
-
-    if (on_apple()){
-        eat();
     }
 
     return SUCCESS;
@@ -325,6 +321,7 @@ int main(){
         goto start;
     }
     printf("Thanks for playing!\n");
+    delay(1500);
     return 0;
 }
 
