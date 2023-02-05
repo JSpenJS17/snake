@@ -307,24 +307,24 @@ int main(){
             key = _getch();
             success = move();
             if (!success){
-                goto quit;
+                break;
             }
         } else {
             success = move();
             if (!success){
-                goto quit;
+                break;
             }
         }
         fill_board();
         draw();
         delay(speed);
     }
-    quit: clear_board();
-          printf("\e[?25h");
-          if (ask_play_again()){
-              goto start;
-          }
-          printf("Thanks for playing!\n");
-          return 0;
+    clear_board();
+    printf("\e[?25h");
+    if (ask_play_again()){
+        goto start;
+    }
+    printf("Thanks for playing!\n");
+    return 0;
 }
 
