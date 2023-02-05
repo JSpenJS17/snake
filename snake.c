@@ -63,7 +63,7 @@ void draw(int dead){
     mod_pos.Y = del_pos[1];
     mod_pos.X *= 2;
     SetConsoleCursorPosition(out, mod_pos);
-    printf("-");
+    printf(" ");
 
     mod_pos.X = apple_pos[0];
     mod_pos.Y = apple_pos[1];
@@ -231,7 +231,7 @@ void fill_board(){
             if (row == pos.Y && col == pos.X){
                 board[row][col] = '^';
             } else {
-                board[row][col] = '-';
+                board[row][col] = ' ';
             }
         }
     }
