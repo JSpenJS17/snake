@@ -50,7 +50,12 @@ void delay(int ms){
     while (clock() < start_time + ms);
 }
 
-void draw(){
+void clrinp(){
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void draw(int dead){
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD mod_pos;
 
@@ -64,7 +69,7 @@ void draw(){
     mod_pos.Y = apple_pos[1];
     mod_pos.X *= 2;
     SetConsoleCursorPosition(out, mod_pos);
-    printf("\033[1;31mA");
+    printf("\033[1;31ma");
 
     int i;
     for (i = 0; i < length; i++){
@@ -72,19 +77,44 @@ void draw(){
         mod_pos.Y = snake_pos[i][1];
         mod_pos.X *= 2;
         SetConsoleCursorPosition(out, mod_pos);
-        printf("\033[1;32mS");
+        if (!dead)
+            printf("\033[1;32m");
+        else
+            printf("\033[1;31m");
+
+        if (i == length - 1){
+            switch (key){
+                case 'w':
+                    printf("^");
+                    break;
+                
+                case 's':
+                    printf("v");
+                    break;
+
+                case 'a':
+                    printf("<");
+                    break;
+
+                case 'd':
+                    printf(">");
+                    break;
+            }
+        } else {
+            printf("s");
+        }
     }
 
     printf("\033[0m");
+    //mod_pos.X = 0;
+    //mod_pos.Y = 11;
+    //SetConsoleCursorPosition(out, mod_pos);
+    //printf("Length: %d", length);
     
 }
 
 int on_apple(){
-    if (pos.X == apple_pos[0] && pos.Y == apple_pos[1]){
-        return 1;
-    } else {
-        return 0;
-    }
+    return (pos.X == apple_pos[0] && pos.Y == apple_pos[1]);
 }
 
 int on_snake(){
@@ -199,7 +229,7 @@ void fill_board(){
     for (row = 0; row < SIZE_Y; row++){
         for (col = 0; col < SIZE_X; col++){
             if (row == pos.Y && col == pos.X){
-                board[row][col] = 'S';
+                board[row][col] = '^';
             } else {
                 board[row][col] = '-';
             }
@@ -212,19 +242,15 @@ void init_board(){
     int row, col;
     for (row = 0; row < SIZE_Y; row++){
         for (col = 0; col < SIZE_X; col++){
-            if (board[row][col] == 'S')
+            if (board[row][col] == '^')
                 printf("\033[1;32m%c \033[0m", board[row][col]);
             else
                 printf("%c ", board[row][col]);
         }
-        printf("\n");
+        if (row < SIZE_Y-1)
+            printf("\n");
     }
     spawn_apple();
-}
-
-void clear_board(){
-    system("cls");
-    printf("You died!\nYour final length was %d.\n", length);
 }
 
 int good_input(char input, char *options){
@@ -237,17 +263,22 @@ int good_input(char input, char *options){
     return 0;
 }
 
-int ask_play_again(){
-    char go_again[2];
-    printf("\nPlay again? (y/n): ");
-    scanf("%s", go_again);
-    int pos = strchr(go_again, 'y') - go_again;
-    int pos_big_y = strchr(go_again, 'Y') - go_again;
-    if (pos >= 0 || pos_big_y >= 0)
-        return 1;
-    else
-        return 0;
+int ask_play_again(char *mode){
+    char go_again;
+    do {
+        system("cls");
+        printf("Game over!\n\n");
+        printf("Mode: %s\n", mode);
+        printf("Final Length: %d\n", length);
+        printf("\nPlay again? (y/n): ");
+        go_again = getchar();
+    } while (go_again != 'y' && go_again != 'n');
+    clrinp();
 
+    if (go_again == 'y')
+        return SUCCESS;
+    else
+        return FAIL;
 }
 
 int key_in_wasd(char key){
@@ -261,33 +292,42 @@ int key_in_wasd(char key){
 }
 
 int main(){
+    system("MODE 22,11");
     start: system("cls");
     int success, speed;
     char choice = ' ';
     length = 1;
-    srand(time(NULL));
-    
+
     char options[] = {'1', '2', '3', '4'};
     while (!good_input(choice, options)) {
         printf("Welcome to Snake!\n");
+        printf("By Pierce Lane\n");
+        printf("WASD to move.\n\n");
         printf("Select a speed:\n");
         printf("1) Slow\n2) Medium\n3) Fast\n4) Insane\n");
         printf("Enter a number: ");
+
         choice = getchar();
+        clrinp();
         system("cls");
     }
 
+    char mode[10];
     switch (choice){
         case '1':
+            strcpy(mode, "Easy");
             speed = 400;
             break;
         case '2':
+            strcpy(mode, "Medium");
             speed = 300;
             break;
         case '3':
+            strcpy(mode, "Hard");
             speed = 200;
             break;
         case '4':
+            strcpy(mode, "Insane");
             speed = 100;
             break;
     }
@@ -296,6 +336,7 @@ int main(){
 
     printf("\e[?25l");
     
+    srand(time(NULL));
     pos.X = 5;
     pos.Y = 5;
     del_pos[0] = pos.X;
@@ -309,32 +350,37 @@ int main(){
         vel = key;
     } while (!key_in_wasd(key));
 
-    draw();
+    draw(0);
 
     while (1){
         if ( _kbhit() ){
             key = _getch();
             success = move();
             if (!success){
+                draw(1);
                 break;
             }
         } else {
             success = move();
             if (!success){
+                draw(1);
                 break;
             }
         }
         fill_board();
-        draw();
+        draw(0);
         delay(speed);
     }
-    clear_board();
+    delay(1000);
+
     printf("\e[?25h");
-    if (ask_play_again()){
+    if (ask_play_again(mode)){
         goto start;
     }
-    printf("Thanks for playing!\n");
-    delay(1500);
+
+    printf("\nThanks for playing!\n");
+    printf("Made by: Pierce Lane\n");
+    delay(2000);
     return 0;
 }
 
