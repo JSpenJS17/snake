@@ -250,6 +250,16 @@ int ask_play_again(){
 
 }
 
+int key_in_wasd(char key){
+    int i;
+    char wasd[] = {'w', 'a', 's', 'd'};
+    for (i = 0; i < 4; i++){
+        if (key == wasd[i])
+            return SUCCESS;
+    }
+    return FAIL;
+}
+
 int main(){
     start: system("cls");
     int success, speed;
@@ -293,10 +303,13 @@ int main(){
     fill_board();
     init_board();
 
-    while (!_kbhit());
+    do {
+        while (!_kbhit());
+        key = _getch();
+        vel = key;
+    } while (!key_in_wasd(key));
+
     draw();
-    key = _getch();
-    vel = key;
 
     while (1){
         if ( _kbhit() ){
