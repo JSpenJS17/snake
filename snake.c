@@ -11,6 +11,8 @@
 #include <time.h>
 #include <windows.h>
 #include <string.h>
+#include <wchar.h>
+#include <locale.h>
 
 
 #define FAIL 0
@@ -20,7 +22,6 @@
 
 char key;
 COORD pos;
-char board[SIZE_Y][SIZE_X];
 int pos_list[100][2];
 int length;
 int snake_pos[100][2];
@@ -60,22 +61,22 @@ void draw(int dead){
     COORD mod_pos;
 
     mod_pos.X = del_pos[0];
-    mod_pos.Y = del_pos[1];
-    mod_pos.X *= 2;
+    mod_pos.Y = del_pos[1]+1;
+    mod_pos.X = mod_pos.X * 2 + 2;
     SetConsoleCursorPosition(out, mod_pos);
     printf(" ");
 
     mod_pos.X = apple_pos[0];
-    mod_pos.Y = apple_pos[1];
-    mod_pos.X *= 2;
+    mod_pos.Y = apple_pos[1]+1;
+    mod_pos.X = mod_pos.X * 2 + 2;
     SetConsoleCursorPosition(out, mod_pos);
     printf("\033[1;31ma");
 
     int i;
     for (i = 0; i < length; i++){
         mod_pos.X = snake_pos[i][0];
-        mod_pos.Y = snake_pos[i][1];
-        mod_pos.X *= 2;
+        mod_pos.Y = snake_pos[i][1]+1;
+        mod_pos.X = mod_pos.X * 2 + 2;
         SetConsoleCursorPosition(out, mod_pos);
         if (!dead)
             printf("\033[1;32m");
@@ -106,11 +107,6 @@ void draw(int dead){
     }
 
     printf("\033[0m");
-    //mod_pos.X = 0;
-    //mod_pos.Y = 11;
-    //SetConsoleCursorPosition(out, mod_pos);
-    //printf("Length: %d", length);
-    
 }
 
 int on_apple(){
@@ -224,32 +220,51 @@ int move(){
     return SUCCESS;
 }
 
-void fill_board(){
-    int row, col;
-    for (row = 0; row < SIZE_Y; row++){
-        for (col = 0; col < SIZE_X; col++){
-            if (row == pos.Y && col == pos.X){
-                board[row][col] = '^';
+void print_bar(){
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(out, 0x8F);
+
+    int i;
+    for (i = 0; i <= SIZE_X * 2 + 2; i++)
+        printf(" ");
+
+    SetConsoleTextAttribute(out, 0x07);
+
+}
+
+void print_poles(){
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    
+    int i, j;
+    for (i = 0; i < SIZE_Y; i++){
+        SetConsoleTextAttribute(out, 0x88);
+        printf("  ");
+        
+        SetConsoleTextAttribute(out, 0x07);
+        for (j = 0; j < SIZE_X*2 - 1; j++)
+            if (i == pos.Y && j/2 == pos.X){
+                printf("\033[1;32m^ \033[0m");
+                j++;
             } else {
-                board[row][col] = ' ';
+                printf(" ");
             }
-        }
+        
+        SetConsoleTextAttribute(out, 0x88);
+        printf("11");
+
+        SetConsoleTextAttribute(out, 0x07);
+        printf("\n");
     }
 }
 
-
 void init_board(){
-    int row, col;
-    for (row = 0; row < SIZE_Y; row++){
-        for (col = 0; col < SIZE_X; col++){
-            if (board[row][col] == '^')
-                printf("\033[1;32m%c \033[0m", board[row][col]);
-            else
-                printf("%c ", board[row][col]);
-        }
-        if (row < SIZE_Y-1)
-            printf("\n");
-    }
+    print_bar();
+    printf("\n");
+
+    print_poles();
+
+    print_bar();
+
     spawn_apple();
 }
 
@@ -292,7 +307,8 @@ int key_in_wasd(char key){
 }
 
 int main(){
-    system("MODE 22,11");
+    system("MODE 25,13");
+
     start: system("cls");
     int success, speed;
     char choice = ' ';
@@ -341,7 +357,6 @@ int main(){
     pos.Y = 5;
     del_pos[0] = pos.X;
     del_pos[1] = pos.Y;
-    fill_board();
     init_board();
 
     do {
@@ -367,7 +382,6 @@ int main(){
                 break;
             }
         }
-        fill_board();
         draw(0);
         delay(speed);
     }
@@ -381,6 +395,7 @@ int main(){
     printf("\nThanks for playing!\n");
     printf("Made by: Pierce Lane\n");
     delay(2000);
+    system("MODE 120,30");
     return 0;
 }
 
