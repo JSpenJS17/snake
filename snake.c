@@ -102,7 +102,7 @@ void draw(int dead){
                     break;
             }
         } else {
-            printf("s");
+            printf("~");
         }
     }
 
@@ -308,19 +308,19 @@ int key_in_wasd(char key){
 
 int main(){
     system("MODE 25,13");
-
+    
     start: system("cls");
     int success, speed;
     char choice = ' ';
     length = 1;
 
-    char options[] = {'1', '2', '3', '4'};
+    char options[] = {'1', '2', '3'};
     while (!good_input(choice, options)) {
         printf("Welcome to Snake!\n");
         printf("By Pierce Lane\n");
         printf("WASD to move.\n\n");
         printf("Select a speed:\n");
-        printf("1) Slow\n2) Medium\n3) Fast\n4) Insane\n");
+        printf("1) Easy\n2) Medium\n3) Hard\n");
         printf("Enter a number: ");
 
         choice = getchar();
@@ -332,18 +332,14 @@ int main(){
     switch (choice){
         case '1':
             strcpy(mode, "Easy");
-            speed = 400;
+            speed = 300;
             break;
         case '2':
             strcpy(mode, "Medium");
-            speed = 300;
+            speed = 200;
             break;
         case '3':
             strcpy(mode, "Hard");
-            speed = 200;
-            break;
-        case '4':
-            strcpy(mode, "Insane");
             speed = 100;
             break;
     }
