@@ -408,13 +408,13 @@ int main(){
     length = 1;
 
     //main menu
-    char options[] = {'1', '2', '3'};
+    char options[] = {'1', '2', '3', '4'};
     while (!is_good_input(choice, options)) {
         printf("Welcome to Snake!\n");
         printf("By Pierce Lane\n");
         printf("WASD to move.\n\n");
         printf("Select a speed:\n");
-        printf("1) Slow\n2) Fast\n3) Insane\n");
+        printf("1) Slow\n2) Fast\n3) Insane\n4) ULTRA NIGHTMARE\n");
         printf("Enter a number: ");
 
         choice = getchar();
@@ -423,7 +423,7 @@ int main(){
     }
 
     //set speed depending on what choice was
-    char mode[10];
+    char mode[20];
     switch (choice){
         case '1':
             strcpy(mode, "Slow");
@@ -436,6 +436,10 @@ int main(){
         case '3':
             strcpy(mode, "Insane");
             speed = 100;
+            break;
+        case '4':
+            strcpy(mode, "ULTRA NIGHTMARE");
+            speed = 50;
             break;
     }
 
