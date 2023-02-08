@@ -460,6 +460,7 @@ int main(){
     printf("\033[1;32m        S N A K E        \n\n");
     printf("\033[0m");
     printf("Made by Pierce Lane\n\n");
+    printf("WASD to move\nEnter to select\n\n");
     printf("Select a difficulty:\n");
 
     //main menu options
@@ -469,7 +470,7 @@ int main(){
                      "\033[1;35mULTRA NIGHTMARE\033[0m"};
     
     //get the choice from the menu
-    choice = menu(options, 6, 4);
+    choice = menu(options, 9, 4);
 
     //turn off the cursor
     printf("\e[?25l");
