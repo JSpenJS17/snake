@@ -1,6 +1,6 @@
 /*
  * Author: Pierce Lane
- * Last modified: 2/5/2023
+ * Last modified: 2/7/2023
  * Made to test the limits of my ability
  *
  */
@@ -28,8 +28,6 @@ int snake_pos[SIZE_X * SIZE_Y + 1][3];
 int del_pos[2];
 int apple_pos[2];
 char vel;
-
-
 
 int rand_lim(int limit) {
     //return a random integer between 0 and the limit.
@@ -97,16 +95,15 @@ void draw(int dead){
         //if the snake isn't dead
         if (!dead)
             //we print it as green
-            printf("\033[1;32m");
+            printf("\033[0;32m");
         //if the snake is dead
         else
             //we print it as red
             printf("\033[1;31m");
         
-        //print the head of the snake.
-        //changes directions depending on the stored direction in the head
-        if (i == length - 1){
-            switch (snake_pos[length-1][2]){
+        //print the snake
+        //changes directions depending on the stored direction in the segment
+            switch (snake_pos[i][2]){
                 case 'w':
                     printf("^");
                     break;
@@ -123,32 +120,9 @@ void draw(int dead){
                     printf(">");
                     break;
             }
-        //print the tail of the snake, vice versa directionally as head
-        } else if (i == 0){
-            switch (snake_pos[0][2]){
-                case 'w':
-                    printf("v");
-                    break;
-                
-                case 's':
-                    printf("^");
-                    break;
-
-                case 'a':
-                    printf(">");
-                    break;
-
-                case 'd':
-                    printf("<");
-                    break;
-            }
-
-        //print the body of the snake
-        } else {
-            printf("~");
         }
-    }
-
+    
+    //restore color to black
     printf("\033[0m");
 }
 
@@ -324,7 +298,7 @@ void print_poles(){
         SetConsoleTextAttribute(out, 0x07);
         for (j = 0; j < SIZE_X*2 - 1; j++)
             if (i == pos.Y && j/2 == pos.X){
-                printf("\033[1;32m^ \033[0m");
+                printf("\033[0;32m^ \033[0m");
                 j++;
             } else {
                 printf(" ");
@@ -369,7 +343,9 @@ int ask_play_again(char *mode){
     char go_again;
     do {
         system("cls");
-        printf("Game over!\n\n");
+        //make sure the cursor is on
+        printf("\e[?25h");
+        printf("\033[1;31m        Game Over        \033[0m\n\n");
         printf("Mode: %s\n", mode);
         printf("Final Length: %d\n", length);
         printf("\nPlay again? (y/n): ");
@@ -394,6 +370,78 @@ int key_in_wasd(char key){
     return FAIL;
 }
 
+void death_animation(int speed){
+    //handle the death wiping animation
+    int i, j;
+    COORD cursor_pos;
+    cursor_pos.X = 0;
+    cursor_pos.Y = 0;
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(out, 0x00);
+    SetConsoleCursorPosition(out, cursor_pos);
+
+    char str[SIZE_X*2 + 3];
+    str[0] = '.';
+    for (j = 1; j < SIZE_X*2 + 3; j++){
+        str[j] = ' ';
+    }
+
+    for (i = 0; i < SIZE_Y+2; i++){
+        cursor_pos.Y = i;
+        printf("%s", str);    
+        delay(speed);
+    }
+
+    SetConsoleTextAttribute(out, 0x07);
+    cursor_pos.X = 0;
+    cursor_pos.Y = 0;
+    SetConsoleCursorPosition(out, cursor_pos);
+}
+
+int menu(char **options, int height_offset, int menu_length){
+    int choice = 0;
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD menu_pos;
+    menu_pos.X = 0;
+    menu_pos.Y = height_offset - 1;
+
+    //print menu
+    int i;
+    for (i = 0; i < menu_length; i++){
+        printf("%d) %s\n", i+1, options[i]);
+        
+    }
+
+    SetConsoleCursorPosition(out, menu_pos);
+    //handle cursor position and selection
+    while (key != 13) {
+        if (_kbhit()){
+            key = _getch();
+            switch (key){
+                case 's':
+                    if (choice < menu_length - 1)
+                        choice++;
+                    else
+                        choice = 0;
+                    break;
+                case 'w':
+                    if (choice > 0)
+                        choice--;
+                    else
+                        choice = menu_length - 1;
+                    break;
+            }
+        menu_pos.Y = height_offset + choice - 1;    
+        SetConsoleCursorPosition(out, menu_pos);
+        }
+    }
+
+    //reset cursor position to 0, 0
+    menu_pos.Y = 0;
+    SetConsoleCursorPosition(out, menu_pos);
+    return choice;
+}
+
 int main(){
     //resize window to perfect snakey size
     system("MODE 25,13");
@@ -403,51 +451,49 @@ int main(){
     //success determines if a move worked, speed is the delay in ms of the run
     int success, speed;
     //choice is the player's choice of menu item (1, 2, 3)
-    char choice = ' ';
+    int choice = 0;
     //set the length to 1 to begin with
     length = 1;
+    //set key to 0 to begin with
+    key = 0;
+    //print title and my name and difficulty question
+    printf("\033[1;32m        S N A K E        \n\n");
+    printf("\033[0m");
+    printf("Made by Pierce Lane\n\n");
+    printf("Select a difficulty:\n");
 
-    //main menu
-    char options[] = {'1', '2', '3', '4'};
-    while (!is_good_input(choice, options)) {
-        printf("Welcome to Snake!\n");
-        printf("By Pierce Lane\n");
-        printf("WASD to move.\n\n");
-        printf("Select a speed:\n");
-        printf("1) Slow\n2) Fast\n3) Insane\n4) ULTRA NIGHTMARE\n");
-        printf("Enter a number: ");
-
-        choice = getchar();
-        clrinp();
-        system("cls");
-    }
-
-    //set speed depending on what choice was
-    char mode[20];
-    switch (choice){
-        case '1':
-            strcpy(mode, "Slow");
-            speed = 300;
-            break;
-        case '2':
-            strcpy(mode, "Fast");
-            speed = 200;
-            break;
-        case '3':
-            strcpy(mode, "Insane");
-            speed = 100;
-            break;
-        case '4':
-            strcpy(mode, "ULTRA NIGHTMARE");
-            speed = 50;
-            break;
-    }
-
-    //clear the menu
-    system("cls");
+    //main menu options
+    char *options[] = {"\033[1;32mSlow\033[0m",
+                     "\033[1;33mFast\033[0m",
+                     "\033[1;31mInsane\033[0m",
+                     "\033[1;35mULTRA NIGHTMARE\033[0m"};
+    
+    //get the choice from the menu
+    choice = menu(options, 6, 4);
 
     //turn off the cursor
     printf("\e[?25l");
+    
+    //set speed depending on what choice was
+    char mode[40];
+    switch (choice){
+        case 0:
+            strcpy(mode, "\033[1;32mSlow\033[0m");
+            speed = 300;
+            break;
+        case 1:
+            strcpy(mode, "\033[1;33mFast\033[0m");
+            speed = 200;
+            break;
+        case 2:
+            strcpy(mode, "\033[1;31mInsane\033[0m");
+            speed = 100;
+            break;
+        case 3:
+            strcpy(mode, "\033[1;35mULTRA NIGHTMARE\033[0m");
+            speed = 50;
+            break;
+    }
     
     //get a random seed
     srand(time(NULL));
@@ -469,7 +515,6 @@ int main(){
 
     //draw with an alive snek
     draw(0);
-
 
     //main game loop
     while (1){
@@ -499,24 +544,35 @@ int main(){
         //delay depending on chosen speed
         delay(speed);
     }
-    //after death, wait 1 second to let it sink in
-    delay(1000);
-
-    //turn back on the cursor
+    //after death, play death animation
+    delay(500);
+    death_animation(speed);
+    //make sure the cursor is on
     printf("\e[?25h");
+    printf("\033[1;31m        Game Over        \033[0m\n\n");
+    printf("Mode: %s\n", mode);
+    printf("Final Length: %d\n\n", length);
+    printf("Play again?\n");
+    
+    char *yesno[] = {"\033[0;32mYes\033[0m", "\033[0;31mNo\033[0m"};
+    int go_again = !menu(yesno, 7, 2);
+    printf("go again: %d", go_again);
     //ask the player to play again
-    if (ask_play_again(mode)){
+    if (go_again){
         //if they say yes, restart
         goto start;
     }
 
     //otherwise, thank the user for playing and do credits
+    system("cls");
     printf("\e[?25l"); //remove the cursor again
-    printf("\nThanks for playing!\n");
-    printf("Made by: Pierce Lane\n\n");
+    printf("\033[1;32m   Thanks for playing!   \n\n");
+    printf("\033[0m");
+    printf("Made by:\n");
+    printf("Pierce Lane\n\n");
     printf("Special thanks to:\n");
-    printf("Landrea\n");
-    delay(2000);
+    printf("Landrea\n\n");
+    delay(2500);
     //also resize their window to a usable size for if they ran this in terminal
     system("MODE 120,30");
     return 0;
