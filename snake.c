@@ -1,6 +1,6 @@
 /*
  * Author: Pierce Lane
- * Last modified: 2/7/2023
+ * Last modified: 2/12/2023
  * Made to test the limits of my ability
  *
  */
@@ -19,6 +19,10 @@
 #define SUCCESS 1
 #define SIZE_X 11
 #define SIZE_Y 11
+#define UP 72
+#define LEFT 75
+#define DOWN 80
+#define RIGHT 77
 
 //define static variables
 char key;
@@ -31,7 +35,7 @@ char vel;
 
 int rand_lim(int limit) {
     //return a random integer between 0 and the limit.
-    int divisor = RAND_MAX/(limit+1);
+    int divisor = RAND_MAX/(limit+1); 
     int retval;
 
     do { 
@@ -95,7 +99,7 @@ void draw(int dead){
         //if the snake isn't dead
         if (!dead)
             //we print it as green
-            printf("\033[0;32m");
+            printf("\033[1;32m");
         //if the snake is dead
         else
             //we print it as red
@@ -184,8 +188,39 @@ void add_pos(){
     }
 }
 
+void convert_key(){
+    //if the key entered was an arrow key, two inputs are sent: -32 and
+    //the value of the arrow key. if the input is on -32, we need to 
+    //skip it by calling _getch() again.
+    if (key == -32)
+        key = _getch();
+
+    //convert arrow key inputs to wasd
+    switch (key){
+        case UP:
+            key = 'w';
+            break;
+
+        case DOWN:
+            key = 's';
+            break;
+
+        case RIGHT:
+            key = 'd';
+            break;
+
+        case LEFT:
+            key = 'a';
+            break;
+    }
+}
+
 int move(){
     //updates snake pos depending on key pressed
+
+    //convert arrow key input to wasd
+    convert_key();
+
     switch (key){
         case 'w':
             //if in bounds and not going south currently
@@ -298,7 +333,7 @@ void print_poles(){
         SetConsoleTextAttribute(out, 0x07);
         for (j = 0; j < SIZE_X*2 - 1; j++)
             if (i == pos.Y && j/2 == pos.X){
-                printf("\033[0;32m^ \033[0m");
+                printf("\033[1;32m^ \033[0m");
                 j++;
             } else {
                 printf(" ");
@@ -338,32 +373,11 @@ int is_good_input(char input, char *options){
     return 0;
 }
 
-int ask_play_again(char *mode){
-    //asks the user if they'd like to play again. returns 1 if they do, else 0.
-    char go_again;
-    do {
-        system("cls");
-        //make sure the cursor is on
-        printf("\e[?25h");
-        printf("\033[1;31m        Game Over        \033[0m\n\n");
-        printf("Mode: %s\n", mode);
-        printf("Final Length: %d\n", length);
-        printf("\nPlay again? (y/n): ");
-        go_again = getchar();
-    } while (go_again != 'y' && go_again != 'n');
-    clrinp();
-
-    if (go_again == 'y')
-        return SUCCESS;
-    else
-        return FAIL;
-}
-
 int key_in_wasd(char key){
     //returns 1 if the char given is in the char array "wasd"
     int i;
-    char wasd[] = {'w', 'a', 's', 'd'};
-    for (i = 0; i < 4; i++){
+    int wasd[] = {'w', 'a', 's', 'd', UP, DOWN, LEFT, RIGHT};
+    for (i = 0; i < 8; i++){
         if (key == wasd[i])
             return SUCCESS;
     }
@@ -417,6 +431,8 @@ int menu(char **options, int height_offset, int menu_length){
     while (key != 13) {
         if (_kbhit()){
             key = _getch();
+            //convert arrow key inputs to wasd
+            convert_key();
             switch (key){
                 case 's':
                     if (choice < menu_length - 1)
@@ -460,7 +476,7 @@ int main(){
     printf("\033[1;32m        S N A K E        \n\n");
     printf("\033[0m");
     printf("Made by Pierce Lane\n\n");
-    printf("WASD to move\nEnter to select\n\n");
+    printf("WASD/Arrow Keys to move\nEnter to select\n\n");
     printf("Select a difficulty:\n");
 
     //main menu options
@@ -523,6 +539,7 @@ int main(){
         if ( _kbhit() ){
             //grab the key
             key = _getch();
+
             //move and store it's success state in success
             success = move();
             //if the move failed, draw the dead snek and break
@@ -554,8 +571,8 @@ int main(){
     printf("Mode: %s\n", mode);
     printf("Final Length: %d\n\n", length);
     printf("Play again?\n");
-    
-    char *yesno[] = {"\033[0;32mYes\033[0m", "\033[0;31mNo\033[0m"};
+
+    char *yesno[] = {"\033[1;32mYes\033[0m", "\033[1;31mNo\033[0m"};
     int go_again = !menu(yesno, 7, 2);
     printf("go again: %d", go_again);
     //ask the player to play again
@@ -573,7 +590,8 @@ int main(){
     printf("Pierce Lane\n\n");
     printf("Special thanks to:\n");
     printf("Landrea\n\n");
-    delay(2500);
+    printf("Press any key to exit...");
+    getch();
     //also resize their window to a usable size for if they ran this in terminal
     system("MODE 120,30");
     return 0;
