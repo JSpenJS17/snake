@@ -548,9 +548,9 @@ int main_menu(){
     strcat(header, centerText("S N A K E", 9, 11));
     
     //change color back and print menu stuff
-    strcat(header, "\n\033[0mMade by Pierce Lane\n\nWASD/Arrow Keys to move");
-    strcat(header, "\nEscape for options");
-    strcat(header, "\nEnter to select\n\nSelect a difficulty:\n");
+    strcat(header, "\n\033[0mMade by Pierce Lane");
+    strcat(header, "\n  -WASD/Arrows to move\n  -Escape for options");
+    strcat(header, "\n  -Enter to select\nSelect a difficulty:\n");
 
     //main menu options
     char *options[] = {"\033[1;32mSlow\033[0m",
@@ -559,7 +559,7 @@ int main_menu(){
                      "\033[1;35mULTRA NIGHTMARE\033[0m"};
     
     //get the choice from the menu
-    choice = menu(options, 10, 4, 1, header);
+    choice = menu(options, 8, 4, 1, header);
 
     //turn off the cursor
     printf("\e[?25l");
