@@ -102,6 +102,8 @@ void clrinp(){
 }
 
 void print_directional_segment(int seg_index){
+    //given a segment's index in the snake_pos, print the correct directional
+    //character
     switch (snake_pos[seg_index][2]){
         case 'w':
             printf("^");
@@ -122,6 +124,8 @@ void print_directional_segment(int seg_index){
 }
 
 void print_reverse_directional_segment(int seg_index){
+    //given a segment's index in the snake_pos, print the reverse of correct
+    //directional character
     switch (snake_pos[seg_index][2]){
         case 'w':
             printf("v");
@@ -693,7 +697,6 @@ int main(){
         }
 
         //resize the window to set dimensions from options menu
-        SIZE_Y = SIZE_X;
         resize_window(SIZE_X * 2 + 3, SIZE_Y + 2);
 
         //get a random seed
@@ -702,6 +705,8 @@ int main(){
         //set starting position
         pos.X = SIZE_X / 2;
         pos.Y = SIZE_Y / 2;
+
+        add_pos();
 
         //set starting position to be deleted on next draw
         del_pos[0] = pos.X;
